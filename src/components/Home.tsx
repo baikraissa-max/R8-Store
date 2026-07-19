@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { ShieldCheck, Zap, Heart, MessageSquare, ArrowRight, HelpCircle, ChevronDown, Award, Star } from "lucide-react";
 import { Banner, Review } from "../types";
+import { safeFetchJson } from "../utils/api";
 
 interface HomeProps {
   onNavigate: (page: string) => void;
@@ -29,25 +30,19 @@ export default function Home({ onNavigate }: HomeProps) {
 
   const fetchBanners = async () => {
     try {
-      const response = await fetch("/api/banners");
-      const data = await response.json();
-      if (response.ok) {
-        setBanners(data);
-      }
-    } catch (e) {
+      const data = await safeFetchJson<Banner[]>("/api/banners");
+      setBanners(data);
+    } catch (e: any) {
       console.error(e);
     }
   };
 
   const fetchHomeReviews = async () => {
     try {
-      const response = await fetch("/api/reviews");
-      const data = await response.json();
-      if (response.ok) {
-        // Show up to 3 highest reviews
-        setReviews(data.slice(0, 3));
-      }
-    } catch (e) {
+      const data = await safeFetchJson<Review[]>("/api/reviews");
+      // Show up to 3 highest reviews
+      setReviews(data.slice(0, 3));
+    } catch (e: any) {
       console.error(e);
     }
   };
@@ -170,37 +165,39 @@ export default function Home({ onNavigate }: HomeProps) {
       {/* 2. ADVANTAGES SECTION BENTO GRID */}
       <section className="space-y-6">
         <div className="text-center">
-          <span className="text-[10px] font-extrabold tracking-widest text-emerald-500 uppercase">Mengapa Memilih Kami?</span>
+          <span className="text-[10px] font-extrabold tracking-widest text-emerald-400 uppercase font-mono">Mengapa Memilih Kami?</span>
           <h2 className="text-2xl font-bold font-display text-white mt-1">Keunggulan R8 Premium</h2>
           <p className="text-xs text-gray-500 max-w-sm mx-auto mt-1">Platform top up Roblox terpercaya yang memprioritaskan keamanan dan kenyamanan pembeli.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {advantages.map((adv, idx) => (
-            <div key={idx} className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-md hover:border-gray-700 transition-colors">
-              <div className="p-3 bg-gray-950 border border-gray-850 rounded-xl w-fit mb-4">
-                {adv.icon}
+            <div key={idx} className="p-6 premium-glass rounded-2xl transition-premium premium-glass-hover shadow-lg hover:-translate-y-0.5 flex flex-col justify-between">
+              <div>
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl w-fit mb-4">
+                  {adv.icon}
+                </div>
+                <h3 className="font-bold text-white text-sm mb-2">{adv.title}</h3>
+                <p className="text-xs text-gray-400 leading-relaxed font-sans">{adv.desc}</p>
               </div>
-              <h3 className="font-bold text-white text-sm mb-2">{adv.title}</h3>
-              <p className="text-xs text-gray-400 leading-relaxed font-sans">{adv.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* 3. WORKFLOW PURCHASE STEPS */}
-      <section className="p-8 bg-gray-900 border border-gray-800 rounded-3xl shadow-xl relative overflow-hidden">
+      <section className="p-8 bg-black/45 backdrop-blur-md border border-emerald-500/10 rounded-3xl shadow-xl relative overflow-hidden">
         <span className="absolute -bottom-12 -right-12 w-48 h-48 bg-emerald-500/5 blur-3xl rounded-full"></span>
         
         <div className="text-center mb-8">
-          <span className="text-[10px] font-extrabold tracking-widest text-emerald-500 uppercase">Cara Kerja</span>
+          <span className="text-[10px] font-extrabold tracking-widest text-emerald-400 uppercase font-mono">Cara Kerja</span>
           <h2 className="text-xl sm:text-2xl font-bold font-display text-white mt-1">Langkah Mudah Pembelian</h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
           {steps.map((st, idx) => (
             <div key={idx} className="relative flex flex-col items-center text-center p-4">
-              <div className="w-10 h-10 rounded-full bg-emerald-500 text-black font-extrabold flex items-center justify-center shadow-lg shadow-emerald-500/20 font-display mb-3 text-sm">
+              <div className="w-10 h-10 rounded-full bg-emerald-500 text-black font-extrabold flex items-center justify-center shadow-lg shadow-emerald-500/30 font-display mb-3 text-sm animate-pulse-ring">
                 0{idx + 1}
               </div>
               <h3 className="font-bold text-white text-xs mb-1">{st.title}</h3>
@@ -214,7 +211,7 @@ export default function Home({ onNavigate }: HomeProps) {
       <section className="space-y-6">
         <div className="flex justify-between items-end">
           <div>
-            <span className="text-[10px] font-extrabold tracking-widest text-emerald-500 uppercase">Testimoni</span>
+            <span className="text-[10px] font-extrabold tracking-widest text-emerald-400 uppercase font-mono">Testimoni</span>
             <h2 className="text-xl sm:text-2xl font-bold font-display text-white mt-0.5">Ulasan Kepuasan Pembeli</h2>
           </div>
           <button
@@ -229,11 +226,11 @@ export default function Home({ onNavigate }: HomeProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {reviews.length > 0 ? (
             reviews.map((rev) => (
-              <div key={rev.id} className="p-5 bg-gray-900 border border-gray-800 rounded-2xl flex flex-col justify-between h-48">
+              <div key={rev.id} className="p-5 premium-glass rounded-2xl flex flex-col justify-between h-48 transition-premium premium-glass-hover shadow-lg hover:-translate-y-0.5">
                 <div>
                   <div className="flex gap-0.5 mb-2.5">
                     {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} size={12} className={s <= rev.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-700"} />
+                      <Star key={s} size={12} className={s <= rev.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-750"} />
                     ))}
                   </div>
                   <p className="text-xs text-gray-300 italic leading-relaxed line-clamp-3">
@@ -241,11 +238,11 @@ export default function Home({ onNavigate }: HomeProps) {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2.5 pt-3 border-t border-gray-800/60 mt-3">
+                <div className="flex items-center gap-2.5 pt-3 border-t border-emerald-500/10 mt-3">
                   <img
                     src={`https://api.dicebear.com/7.x/pixel-art/svg?seed=${rev.robloxUsername || rev.username}`}
                     alt="Review user"
-                    className="w-8 h-8 rounded-full bg-gray-950 p-0.5 border border-gray-800"
+                    className="w-8 h-8 rounded-full bg-gray-950 p-0.5 border border-emerald-500/15"
                     referrerPolicy="no-referrer"
                   />
                   <div className="min-w-0">
@@ -266,7 +263,7 @@ export default function Home({ onNavigate }: HomeProps) {
       {/* 5. QUICK FAQ ACCORDIONS PREVIEW */}
       <section className="space-y-6">
         <div className="text-center">
-          <span className="text-[10px] font-extrabold tracking-widest text-emerald-500 uppercase">FAQ</span>
+          <span className="text-[10px] font-extrabold tracking-widest text-emerald-400 uppercase font-mono">FAQ</span>
           <h2 className="text-xl sm:text-2xl font-bold font-display text-white mt-0.5">Pertanyaan Umum</h2>
         </div>
 
@@ -274,10 +271,10 @@ export default function Home({ onNavigate }: HomeProps) {
           {homeFaqs.map((faq, idx) => {
             const isOpen = activeFaq === idx;
             return (
-              <div key={idx} className="border border-gray-800 rounded-xl bg-gray-900/50 overflow-hidden">
+              <div key={idx} className="border border-emerald-500/10 rounded-xl bg-black/45 backdrop-blur-sm overflow-hidden transition-all hover:border-emerald-500/20">
                 <button
                   onClick={() => setActiveFaq(isOpen ? null : idx)}
-                  className="w-full px-5 py-4 flex items-center justify-between text-left gap-4 hover:bg-gray-800/10 focus:outline-none"
+                  className="w-full px-5 py-4 flex items-center justify-between text-left gap-4 hover:bg-emerald-500/5 focus:outline-none"
                 >
                   <span className="text-xs sm:text-sm font-semibold text-gray-200">{faq.q}</span>
                   <ChevronDown size={14} className={`text-emerald-500 transition-transform ${isOpen ? "rotate-180" : ""}`} />
@@ -291,7 +288,7 @@ export default function Home({ onNavigate }: HomeProps) {
                       transition={{ duration: 0.15 }}
                       className="overflow-hidden"
                     >
-                      <p className="px-5 pb-4 text-xs text-gray-400 leading-relaxed pt-2 border-t border-gray-800">
+                      <p className="px-5 pb-4 text-xs text-gray-400 leading-relaxed pt-2 border-t border-emerald-500/10">
                         {faq.a}
                       </p>
                     </motion.div>

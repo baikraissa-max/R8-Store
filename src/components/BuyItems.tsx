@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, SlidersHorizontal, Loader2, AlertTriangle, User, CheckCircle2, ChevronRight, ShoppingCart } from "lucide-react";
 import { GamePassItem, RobloxUser, User as UserType } from "../types";
+import { safeFetchJson } from "../utils/api";
 
 interface BuyItemsProps {
   currentUser: UserType | null;
@@ -35,12 +36,9 @@ export default function BuyItems({ currentUser, onNavigateToTx }: BuyItemsProps)
   const fetchItems = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/items");
-      const data = await response.json();
-      if (response.ok) {
-        setItems(data);
-      }
-    } catch (e) {
+      const data = await safeFetchJson<GamePassItem[]>("/api/items");
+      setItems(data);
+    } catch (e: any) {
       console.error("Gagal mengambil Game Pass:", e);
     } finally {
       setIsLoading(false);
@@ -53,11 +51,7 @@ export default function BuyItems({ currentUser, onNavigateToTx }: BuyItemsProps)
     setValidationError("");
     setValidatedUser(null);
     try {
-      const response = await fetch(`/api/roblox/user/${encodeURIComponent(userStr.trim())}`);
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Gagal memverifikasi akun Roblox");
-      }
+      const data = await safeFetchJson<RobloxUser>(`/api/roblox/user/${encodeURIComponent(userStr.trim())}`);
       setValidatedUser(data);
     } catch (err: any) {
       setValidationError(err.message || "Nama akun Roblox tidak valid");
@@ -101,16 +95,11 @@ export default function BuyItems({ currentUser, onNavigateToTx }: BuyItemsProps)
         paymentMethod: selectedPayment
       };
 
-      const response = await fetch("/api/transactions", {
+      const data = await safeFetchJson<any>("/api/transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(txPayload)
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Gagal checkout Game Pass");
-      }
 
       handleCloseCheckout();
       onNavigateToTx(data.transaction.id);
@@ -167,7 +156,7 @@ export default function BuyItems({ currentUser, onNavigateToTx }: BuyItemsProps)
       </div>
 
       {/* Filter and Search Bar Row */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 bg-gray-900 border border-gray-800 rounded-2xl shadow-lg mb-6">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-between p-4 premium-glass border border-emerald-500/10 rounded-2xl shadow-lg mb-6">
         
         {/* Search */}
         <div className="relative w-full md:w-80">
@@ -193,7 +182,7 @@ export default function BuyItems({ currentUser, onNavigateToTx }: BuyItemsProps)
               className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 selectedCategory === cat
                   ? "bg-emerald-500 text-black shadow"
-                  : "bg-gray-950 text-gray-400 border border-gray-800 hover:text-white"
+                  : "bg-black/40 text-gray-400 border border-emerald-500/10 hover:text-white"
               }`}
             >
               {cat}
@@ -230,7 +219,7 @@ export default function BuyItems({ currentUser, onNavigateToTx }: BuyItemsProps)
             <motion.div
               key={item.id}
               layout
-              className="group bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-lg hover:border-gray-700 transition-all flex flex-col justify-between h-96"
+              className="group premium-glass rounded-2xl overflow-hidden shadow-lg border border-emerald-500/10 hover:-translate-y-0.5 transition-premium flex flex-col justify-between h-96"
             >
               {/* Product Thumbnail Banner */}
               <div className="h-44 w-full relative overflow-hidden bg-gray-950">
@@ -295,7 +284,7 @@ export default function BuyItems({ currentUser, onNavigateToTx }: BuyItemsProps)
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-lg bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden"
+              className="w-full max-w-lg premium-glass border border-emerald-500/15 rounded-2xl shadow-2xl overflow-hidden"
             >
               {/* Modal Header */}
               <div className="p-5 border-b border-gray-800 flex items-center justify-between">

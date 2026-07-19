@@ -75,7 +75,7 @@ export default function Help() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         {/* Step Guide Bento (2 cols) */}
         <div className="md:col-span-2 space-y-6">
-          <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl">
+          <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl">
             <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               <ShieldCheck className="text-emerald-500" size={20} />
               Langkah Sederhana Pembelian
@@ -94,7 +94,7 @@ export default function Help() {
           </div>
 
           {/* FAQs Accordion */}
-          <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl">
+          <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl">
             <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               <HelpCircle className="text-emerald-500" size={20} />
               Pertanyaan Sering Diajukan (FAQ)
@@ -140,7 +140,7 @@ export default function Help() {
 
         {/* Support Channels Card (1 col) */}
         <div className="md:col-span-1 space-y-6">
-          <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl space-y-5 text-center relative overflow-hidden">
+          <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl space-y-5 text-center relative overflow-hidden">
             <span className="absolute -bottom-10 -left-10 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full"></span>
             
             <MessageSquare className="text-emerald-500 mx-auto" size={32} />

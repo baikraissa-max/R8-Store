@@ -5,6 +5,7 @@ import {
   MessageSquare, LayoutDashboard, ShoppingCart, HelpCircle, Trophy, Compass, SearchCheck 
 } from "lucide-react";
 import { User, SystemSettings } from "./types";
+import { safeFetchJson } from "./utils/api";
 
 // Modular Components Imports
 import Home from "./components/Home";
@@ -58,12 +59,9 @@ export default function App() {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch("/api/settings");
-      const data = await response.json();
-      if (response.ok) {
-        setSettings(data);
-      }
-    } catch (e) {
+      const data = await safeFetchJson<SystemSettings>("/api/settings");
+      setSettings(data);
+    } catch (e: any) {
       console.error("Gagal memuat settings:", e);
     }
   };
@@ -105,7 +103,7 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#090c10] text-[#f3f4f6] font-sans flex flex-col justify-between selection:bg-emerald-500 selection:text-black">
+    <div className="min-h-screen bg-[#05070a] text-[#f3f4f6] font-sans flex flex-col justify-between selection:bg-emerald-500 selection:text-black">
       
       {/* 1. TOAST NOTIFIER */}
       <AnimatePresence>
@@ -114,7 +112,7 @@ export default function App() {
             initial={{ opacity: 0, y: -20, x: "-50%" }}
             animate={{ opacity: 1, y: 0, x: "-50%" }}
             exit={{ opacity: 0, y: -20, x: "-50%" }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 bg-emerald-500 text-black font-semibold text-xs rounded-full shadow-lg shadow-emerald-500/10 font-sans border border-emerald-400"
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 bg-emerald-500 text-black font-semibold text-xs rounded-full shadow-lg shadow-emerald-500/25 font-sans border border-emerald-400 animate-pulse-ring"
           >
             <CheckCircle2 size={16} />
             <span>{toastMessage}</span>
@@ -134,7 +132,7 @@ export default function App() {
       </AnimatePresence>
 
       {/* 3. PLATFORM HEADER & NAVBAR */}
-      <header className="sticky top-0 z-40 bg-[#090c10]/85 backdrop-blur-md border-b border-gray-900 px-4 py-3.5">
+      <header className="sticky top-0 z-40 bg-black/65 backdrop-blur-md border-b border-emerald-500/10 px-4 py-3.5 shadow-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           
           {/* Logo container */}
@@ -142,7 +140,7 @@ export default function App() {
             onClick={() => setActivePage("home")} 
             className="flex items-center gap-2 cursor-pointer group"
           >
-            <span className="px-2.5 py-1 text-xs font-black tracking-widest text-black bg-emerald-500 rounded font-display select-none">
+            <span className="px-2.5 py-1 text-xs font-black tracking-widest text-black bg-emerald-500 rounded font-display select-none animate-float">
               R8
             </span>
             <span className="text-base font-black tracking-tight text-white font-display group-hover:text-emerald-400 transition-colors">
@@ -159,10 +157,10 @@ export default function App() {
                   setActivePage(link.id);
                   setTargetedTxId(undefined);
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 focus:outline-none ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 border focus:outline-none ${
                   activePage === link.id
-                    ? "text-emerald-400 bg-emerald-500/5 font-extrabold"
-                    : "text-gray-400 hover:text-white"
+                    ? "text-emerald-400 bg-emerald-500/5 border-emerald-500/15 font-extrabold"
+                    : "text-gray-400 border-transparent hover:text-white hover:bg-gray-900/40"
                 }`}
               >
                 {link.icon}
@@ -181,8 +179,8 @@ export default function App() {
                     onClick={() => setActivePage("admin")}
                     className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all border ${
                       activePage === "admin"
-                        ? "bg-emerald-500 text-black border-emerald-500 shadow-md shadow-emerald-500/10"
-                        : "bg-transparent text-gray-400 border-gray-800 hover:text-white"
+                        ? "bg-emerald-500 text-black border-emerald-500 shadow-md shadow-emerald-500/20 font-extrabold"
+                        : "bg-transparent text-gray-400 border-gray-800 hover:text-white hover:bg-gray-900/40"
                     }`}
                   >
                     Admin Control
@@ -192,10 +190,10 @@ export default function App() {
                 <button
                   id="nav-dashboard-btn"
                   onClick={() => setActivePage("dashboard")}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all border flex items-center gap-1.5 ${
                     activePage === "dashboard"
-                      ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/10"
-                      : "bg-gray-900 text-gray-300 hover:text-white"
+                      ? "bg-emerald-500 text-black border-emerald-500 shadow-md shadow-emerald-500/20 font-extrabold"
+                      : "bg-gray-900 text-gray-300 border-gray-800 hover:text-white hover:bg-gray-800/80"
                   }`}
                 >
                   <UserIcon size={14} />
@@ -206,7 +204,7 @@ export default function App() {
               <button
                 id="nav-auth-open-btn"
                 onClick={() => setIsAuthModalOpen(true)}
-                className="px-4.5 py-2 bg-emerald-500 hover:bg-emerald-600 text-black text-xs font-extrabold rounded-xl shadow-lg shadow-emerald-500/5 transition-all active:scale-[0.98]"
+                className="px-4.5 py-2 bg-emerald-500 hover:bg-emerald-600 text-black text-xs font-extrabold rounded-xl shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]"
               >
                 Login / Daftar
               </button>
@@ -217,7 +215,7 @@ export default function App() {
           <button
             id="mobile-nav-toggle-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-1.5 text-gray-400 hover:text-white transition-colors"
+            className="lg:hidden p-1.5 text-gray-400 hover:text-white transition-colors border border-transparent hover:border-gray-800 rounded-lg"
           >
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -233,7 +231,7 @@ export default function App() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-[#0d1117] border-b border-gray-800 overflow-hidden"
+            className="lg:hidden bg-black/90 backdrop-blur-md border-b border-emerald-500/10 overflow-hidden"
           >
             <div className="p-4 space-y-2 flex flex-col">
               {navLinks.map((link) => (
@@ -244,10 +242,10 @@ export default function App() {
                     setTargetedTxId(undefined);
                     setMobileMenuOpen(false);
                   }}
-                  className={`p-2.5 rounded-lg text-left text-xs font-bold transition-all flex items-center gap-3 ${
+                  className={`p-2.5 rounded-lg text-left text-xs font-bold transition-all flex items-center gap-3 border ${
                     activePage === link.id
-                      ? "text-emerald-400 bg-emerald-500/5 font-extrabold"
-                      : "text-gray-400 hover:text-white"
+                      ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/15 font-extrabold"
+                      : "text-gray-400 border-transparent hover:text-white hover:bg-gray-900/40"
                   }`}
                 >
                   {link.icon}
@@ -255,7 +253,7 @@ export default function App() {
                 </button>
               ))}
 
-              <div className="h-px bg-gray-800 my-3"></div>
+              <div className="h-px bg-emerald-500/10 my-3"></div>
 
               {currentUser ? (
                 <div className="space-y-2 flex flex-col">
@@ -265,7 +263,7 @@ export default function App() {
                         setActivePage("admin");
                         setMobileMenuOpen(false);
                       }}
-                      className="p-2.5 rounded-lg text-left text-xs font-bold text-red-400 bg-red-500/5 hover:bg-red-500/10 flex items-center gap-3"
+                      className="p-2.5 rounded-lg text-left text-xs font-bold text-red-400 bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 flex items-center gap-3"
                     >
                       <LayoutDashboard size={14} />
                       <span>Admin Panel</span>
@@ -276,7 +274,7 @@ export default function App() {
                       setActivePage("dashboard");
                       setMobileMenuOpen(false);
                     }}
-                    className="p-2.5 rounded-lg text-left text-xs font-bold text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10 flex items-center gap-3"
+                    className="p-2.5 rounded-lg text-left text-xs font-bold text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 hover:bg-emerald-500/10 flex items-center gap-3"
                   >
                     <UserIcon size={14} />
                     <span>Profil: {currentUser.username}</span>
@@ -288,7 +286,7 @@ export default function App() {
                     setIsAuthModalOpen(true);
                     setMobileMenuOpen(false);
                   }}
-                  className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-black text-xs font-bold rounded-xl transition-all"
+                  className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-black text-xs font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all"
                 >
                   Masuk / Daftar Akun
                 </button>

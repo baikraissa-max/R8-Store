@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Star, MessageSquare, ShieldAlert, Check, Loader2, Sparkles, StarHalf, ShieldCheck } from "lucide-react";
 import { Review, User } from "../types";
+import { safeFetchJson } from "../utils/api";
 
 interface ReviewsProps {
   currentUser: User | null;
@@ -32,12 +33,9 @@ export default function Reviews({ currentUser }: ReviewsProps) {
   const fetchReviews = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/reviews");
-      const data = await response.json();
-      if (response.ok) {
-        setReviews(data);
-      }
-    } catch (e) {
+      const data = await safeFetchJson<Review[]>("/api/reviews");
+      setReviews(data);
+    } catch (e: any) {
       console.error("Gagal mengambil reviews:", e);
     } finally {
       setIsLoading(false);
@@ -65,7 +63,7 @@ export default function Reviews({ currentUser }: ReviewsProps) {
     }
 
     try {
-      const response = await fetch("/api/reviews", {
+      const data = await safeFetchJson<any>("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -75,11 +73,6 @@ export default function Reviews({ currentUser }: ReviewsProps) {
           comment
         })
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Gagal mengirim ulasan");
-      }
 
       setSubmitSuccess(data.message || "Ulasan berhasil dikirim!");
       setComment("");
@@ -124,7 +117,7 @@ export default function Reviews({ currentUser }: ReviewsProps) {
         {/* Left Side: Stats and Form */}
         <div className="lg:col-span-1 space-y-6">
           {/* Average Stats Card */}
-          <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl text-center relative overflow-hidden">
+          <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl text-center relative overflow-hidden">
             <span className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full"></span>
             
             <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-2">Rating Rata-rata</h3>
@@ -149,7 +142,7 @@ export default function Reviews({ currentUser }: ReviewsProps) {
           </div>
 
           {/* Submission Form Card */}
-          <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl">
+          <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl">
             <h3 className="text-base font-bold text-white mb-4 flex items-center gap-2">
               <MessageSquare size={18} className="text-emerald-500" />
               Tulis Ulasan Baru
@@ -292,7 +285,7 @@ export default function Reviews({ currentUser }: ReviewsProps) {
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      className="p-5 bg-gray-900 border border-gray-800 rounded-2xl shadow-lg flex flex-col justify-between hover:border-gray-700 transition-colors"
+                      className="p-5 premium-glass border border-emerald-500/10 rounded-2xl shadow-lg flex flex-col justify-between hover:-translate-y-0.5 transition-premium premium-glass-hover"
                     >
                       <div>
                         {/* Rating Stars */}

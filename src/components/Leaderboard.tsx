@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Trophy, Medal, Loader2, Calendar, TrendingUp, Users } from "lucide-react";
 import { LeaderboardEntry } from "../types";
+import { safeFetchJson } from "../utils/api";
 
 export default function Leaderboard() {
   const [period, setPeriod] = useState<"daily" | "weekly" | "monthly" | "alltime">("alltime");
@@ -15,12 +16,9 @@ export default function Leaderboard() {
   const fetchLeaderboard = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/leaderboard?period=${period}`);
-      const data = await response.json();
-      if (response.ok) {
-        setLeaders(data);
-      }
-    } catch (e) {
+      const data = await safeFetchJson<LeaderboardEntry[]>(`/api/leaderboard?period=${period}`);
+      setLeaders(data);
+    } catch (e: any) {
       console.error("Gagal memuat leaderboard:", e);
     } finally {
       setIsLoading(false);
@@ -75,7 +73,7 @@ export default function Leaderboard() {
 
       {/* Period Select Bar */}
       <div className="flex justify-center mb-8">
-        <div className="p-1 bg-gray-900 border border-gray-800 rounded-xl flex gap-1">
+        <div className="p-1 premium-glass border border-emerald-500/10 rounded-xl flex gap-1">
           <button
             id="period-daily-btn"
             onClick={() => setPeriod("daily")}
@@ -192,8 +190,8 @@ export default function Leaderboard() {
             )}
 
             {/* List Layout for Leaderboard Entries */}
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-xl">
-              <div className="px-6 py-4 border-b border-gray-800 bg-gray-900/50 flex items-center justify-between">
+            <div className="premium-glass border border-emerald-500/10 rounded-2xl overflow-hidden shadow-xl">
+              <div className="px-6 py-4 border-b border-emerald-500/10 bg-black/45 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   <Users size={14} />
                   <span>Daftar Sultan R8</span>

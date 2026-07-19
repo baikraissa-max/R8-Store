@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { User as UserIcon, Link2, ShieldCheck, History, CreditCard, ChevronRight, Loader2, AlertCircle, PlusCircle, CheckCircle } from "lucide-react";
 import { User, Transaction, RobloxUser } from "../types";
+import { safeFetchJson } from "../utils/api";
 
 interface DashboardProps {
   currentUser: User | null;
@@ -35,12 +36,9 @@ export default function Dashboard({ currentUser, onUpdateUser, onNavigateToTx, o
     if (!currentUser) return;
     setIsLoadingTx(true);
     try {
-      const response = await fetch(`/api/users/${currentUser.id}/transactions`);
-      const data = await response.json();
-      if (response.ok) {
-        setTransactions(data);
-      }
-    } catch (e) {
+      const data = await safeFetchJson<Transaction[]>(`/api/users/${currentUser.id}/transactions`);
+      setTransactions(data);
+    } catch (e: any) {
       console.error("Gagal mengambil transaksi pengguna:", e);
     } finally {
       setIsLoadingTx(false);
@@ -56,15 +54,10 @@ export default function Dashboard({ currentUser, onUpdateUser, onNavigateToTx, o
 
     try {
       // Fetch user profile from Roblox Proxy first
-      const robloxProxyResponse = await fetch(`/api/roblox/user/${encodeURIComponent(robloxUsername.trim())}`);
-      const robloxData = await robloxProxyResponse.json();
-
-      if (!robloxProxyResponse.ok) {
-        throw new Error(robloxData.error || "Username Roblox tidak valid");
-      }
+      const robloxData = await safeFetchJson<RobloxUser>(`/api/roblox/user/${encodeURIComponent(robloxUsername.trim())}`);
 
       // Save Roblox link details to User DB
-      const updateResponse = await fetch("/api/auth/profile", {
+      const updateData = await safeFetchJson<any>("/api/auth/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -73,11 +66,6 @@ export default function Dashboard({ currentUser, onUpdateUser, onNavigateToTx, o
           robloxAvatar: robloxData.avatarUrl
         })
       });
-
-      const updateData = await updateResponse.json();
-      if (!updateResponse.ok) {
-        throw new Error(updateData.error || "Gagal menyimpan link profil");
-      }
 
       setLinkSuccess(`Akun Roblox ${robloxData.displayName} berhasil ditautkan!`);
       onUpdateUser(updateData.user);
@@ -161,7 +149,7 @@ export default function Dashboard({ currentUser, onUpdateUser, onNavigateToTx, o
         <div className="lg:col-span-1 space-y-6">
           
           {/* Profile Overview Card */}
-          <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl space-y-5 text-center relative overflow-hidden">
+          <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl space-y-5 text-center relative overflow-hidden">
             <span className="absolute -top-10 -left-10 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full"></span>
             
             <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/20 mx-auto flex items-center justify-center text-emerald-500">
@@ -215,7 +203,7 @@ export default function Dashboard({ currentUser, onUpdateUser, onNavigateToTx, o
           </div>
 
           {/* Roblox Character Linker Card */}
-          <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl">
+          <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl">
             <h3 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
               <Link2 className="text-emerald-500" size={18} />
               Tautkan Karakter Roblox
@@ -294,8 +282,8 @@ export default function Dashboard({ currentUser, onUpdateUser, onNavigateToTx, o
 
         {/* Right column: Orders History checklist */}
         <div className="lg:col-span-2">
-          <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl min-h-[400px]">
-            <h3 className="text-sm font-bold text-white mb-5 flex items-center gap-2 tracking-wide uppercase pb-2.5 border-b border-gray-800">
+          <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl min-h-[400px]">
+            <h3 className="text-sm font-bold text-white mb-5 flex items-center gap-2 tracking-wide uppercase pb-2.5 border-b border-emerald-500/10">
               <History className="text-emerald-500" size={18} />
               Riwayat Transaksi
             </h3>

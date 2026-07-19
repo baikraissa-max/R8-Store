@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Search, Loader2, ArrowRight, ShieldCheck, CreditCard, ShoppingBag, Calendar, User, Clock, AlertTriangle } from "lucide-react";
 import { Transaction } from "../types";
+import { safeFetchJson } from "../utils/api";
 
 interface CheckTransactionProps {
   initialTxId?: string;
@@ -34,13 +35,7 @@ export default function CheckTransaction({ initialTxId, onClearInitial }: CheckT
     setTransaction(null);
 
     try {
-      const response = await fetch(`/api/transactions/${id.trim()}`);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "ID Transaksi tidak ditemukan.");
-      }
-
+      const data = await safeFetchJson<Transaction>(`/api/transactions/${id.trim()}`);
       setTransaction(data);
     } catch (err: any) {
       setError(err.message || "Gagal mengambil data transaksi");
@@ -55,16 +50,13 @@ export default function CheckTransaction({ initialTxId, onClearInitial }: CheckT
     if (!transaction) return;
     setSimulationLoading(true);
     try {
-      const response = await fetch(`/api/transactions/${transaction.id}/status`, {
+      const data = await safeFetchJson<any>(`/api/transactions/${transaction.id}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "Berhasil", adminUsername: "Buyer (Simulation)" })
       });
-      const data = await response.json();
-      if (response.ok) {
-        setTransaction(data.transaction);
-      }
-    } catch (e) {
+      setTransaction(data.transaction);
+    } catch (e: any) {
       console.error(e);
     } finally {
       setSimulationLoading(false);
@@ -116,7 +108,7 @@ export default function CheckTransaction({ initialTxId, onClearInitial }: CheckT
       </div>
 
       {/* Search Input Card */}
-      <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl mb-8">
+      <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl mb-8">
         <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-grow">
             <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-500">
@@ -194,7 +186,7 @@ export default function CheckTransaction({ initialTxId, onClearInitial }: CheckT
             className="space-y-6"
           >
             {/* Status Flow Banner */}
-            <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl">
+            <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-800">
                 <div>
                   <span className="text-xs text-gray-500">ID TRANSAKSI</span>
@@ -281,7 +273,7 @@ export default function CheckTransaction({ initialTxId, onClearInitial }: CheckT
             {/* Split layout for buyer and purchase summary */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Product & Payment Summary Card */}
-              <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl flex flex-col justify-between">
+              <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl flex flex-col justify-between">
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold text-white tracking-wide uppercase flex items-center gap-2">
                     <ShoppingBag size={16} className="text-emerald-500" />
@@ -335,7 +327,7 @@ export default function CheckTransaction({ initialTxId, onClearInitial }: CheckT
               </div>
 
               {/* Roblox Account Target Card */}
-              <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl flex flex-col justify-between">
+              <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl flex flex-col justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-white tracking-wide uppercase flex items-center gap-2 mb-4">
                     <User size={16} className="text-emerald-500" />
@@ -374,7 +366,7 @@ export default function CheckTransaction({ initialTxId, onClearInitial }: CheckT
 
             {/* Instruction Card */}
             {transaction.status === "Menunggu Pembayaran" && transaction.paymentDetails && (
-              <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl">
+              <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl">
                 <h3 className="text-sm font-semibold text-white tracking-wide uppercase flex items-center gap-2 mb-4">
                   <CreditCard size={16} className="text-emerald-500" />
                   Petunjuk Pembayaran

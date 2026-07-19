@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { User, CheckCircle2, AlertTriangle, ChevronRight, Loader2, CreditCard, Sparkles, ShieldCheck } from "lucide-react";
 import { RobloxUser, RobuxPackage, Transaction, User as UserType } from "../types";
+import { safeFetchJson } from "../utils/api";
 
 interface BuyRobuxProps {
   currentUser: UserType | null;
@@ -36,12 +37,9 @@ export default function BuyRobux({ currentUser, onNavigateToTx }: BuyRobuxProps)
   const fetchPackages = async () => {
     setIsLoadingPackages(true);
     try {
-      const response = await fetch("/api/products");
-      const data = await response.json();
-      if (response.ok) {
-        setPackages(data);
-      }
-    } catch (e) {
+      const data = await safeFetchJson<RobuxPackage[]>("/api/products");
+      setPackages(data);
+    } catch (e: any) {
       console.error("Gagal memuat produk Robux:", e);
     } finally {
       setIsLoadingPackages(false);
@@ -59,11 +57,7 @@ export default function BuyRobux({ currentUser, onNavigateToTx }: BuyRobuxProps)
     setValidationError("");
     setValidatedUser(null);
     try {
-      const response = await fetch(`/api/roblox/user/${encodeURIComponent(userStr.trim())}`);
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Gagal memverifikasi akun Roblox");
-      }
+      const data = await safeFetchJson<RobloxUser>(`/api/roblox/user/${encodeURIComponent(userStr.trim())}`);
       setValidatedUser(data);
     } catch (err: any) {
       setValidationError(err.message || "Nama akun Roblox tidak valid");
@@ -89,16 +83,11 @@ export default function BuyRobux({ currentUser, onNavigateToTx }: BuyRobuxProps)
         paymentMethod: selectedPayment
       };
 
-      const response = await fetch("/api/transactions", {
+      const data = await safeFetchJson<any>("/api/transactions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(txPayload)
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Gagal membuat checkout transaksi");
-      }
 
       // Redirect user to tracking page
       onNavigateToTx(data.transaction.id);
@@ -145,8 +134,9 @@ export default function BuyRobux({ currentUser, onNavigateToTx }: BuyRobuxProps)
         <div className="lg:col-span-2 space-y-6">
           
           {/* Step 1: Roblox Account Linker */}
-          <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl">
-            <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+          <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl relative overflow-hidden">
+            <span className="absolute -top-12 -left-12 w-24 h-24 bg-emerald-500/5 blur-2xl rounded-full"></span>
+            <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2 relative z-10">
               <span className="w-6 h-6 rounded-full bg-emerald-500 text-black text-xs flex items-center justify-center font-bold">1</span>
               Verifikasi Akun Roblox
             </h2>
@@ -234,7 +224,7 @@ export default function BuyRobux({ currentUser, onNavigateToTx }: BuyRobuxProps)
           </div>
 
           {/* Step 2: Choose Robux Nominal Package */}
-          <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl">
+          <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl">
             <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-emerald-500 text-black text-xs flex items-center justify-center font-bold">2</span>
               Pilih Nominal Robux
@@ -296,7 +286,7 @@ export default function BuyRobux({ currentUser, onNavigateToTx }: BuyRobuxProps)
           </div>
 
           {/* Step 3: Select Payment Gateways */}
-          <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl">
+          <div className="p-6 premium-glass border border-emerald-500/10 rounded-2xl shadow-xl">
             <h2 className="text-base font-bold text-white mb-4 flex items-center gap-2">
               <span className="w-6 h-6 rounded-full bg-emerald-500 text-black text-xs flex items-center justify-center font-bold">3</span>
               Pilih Metode Pembayaran
@@ -345,8 +335,8 @@ export default function BuyRobux({ currentUser, onNavigateToTx }: BuyRobuxProps)
 
         {/* Sidebar Summary Card (Right) */}
         <div className="lg:col-span-1">
-          <div className="p-6 bg-gray-900 border border-gray-800 rounded-2xl shadow-xl sticky top-6 space-y-5">
-            <h3 className="text-sm font-semibold text-white tracking-wide uppercase pb-3 border-b border-gray-800">
+          <div className="p-6 premium-glass border border-emerald-500/15 rounded-2xl shadow-xl sticky top-6 space-y-5">
+            <h3 className="text-sm font-semibold text-white tracking-wide uppercase pb-3 border-b border-emerald-500/10">
               Ringkasan Checkout
             </h3>
 

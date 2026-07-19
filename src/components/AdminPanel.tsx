@@ -7,6 +7,7 @@ import {
 import { 
   User, RobuxPackage, GamePassItem, Banner, Review, Transaction, AdminLog, SystemSettings 
 } from "../types";
+import { safeFetchJson } from "../utils/api";
 
 interface AdminPanelProps {
   currentUser: User | null;
@@ -48,20 +49,15 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   const fetchAllAdminData = async () => {
     setIsLoading(true);
     try {
-      const [txRes, pkgRes, itemRes, bannerRes, reviewRes, userRes, setRes, logRes] = await Promise.all([
-        fetch("/api/admin/transactions"),
-        fetch("/api/products?admin=true"),
-        fetch("/api/items?admin=true"),
-        fetch("/api/banners?admin=true"),
-        fetch("/api/admin/reviews"),
-        fetch("/api/admin/users"),
-        fetch("/api/settings"),
-        fetch("/api/admin/logs")
-      ]);
-
       const [txs, pkgs, items, bns, revs, usrs, sets, logs] = await Promise.all([
-        txRes.json(), pkgRes.json(), itemRes.json(), bannerRes.json(),
-        reviewRes.json(), userRes.json(), setRes.json(), logRes.json()
+        safeFetchJson<Transaction[]>("/api/admin/transactions"),
+        safeFetchJson<RobuxPackage[]>("/api/products?admin=true"),
+        safeFetchJson<GamePassItem[]>("/api/items?admin=true"),
+        safeFetchJson<Banner[]>("/api/banners?admin=true"),
+        safeFetchJson<Review[]>("/api/admin/reviews"),
+        safeFetchJson<User[]>("/api/admin/users"),
+        safeFetchJson<SystemSettings>("/api/settings"),
+        safeFetchJson<AdminLog[]>("/api/admin/logs")
       ]);
 
       setTransactions(txs);
@@ -84,14 +80,12 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   // Status order changer
   const handleUpdateOrderStatus = async (txId: string, status: string) => {
     try {
-      const response = await fetch(`/api/transactions/${txId}/status`, {
+      await safeFetchJson<any>(`/api/transactions/${txId}/status`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status, adminUsername: currentUser?.username || "admin" })
       });
-      if (response.ok) {
-        fetchAllAdminData();
-      }
+      fetchAllAdminData();
     } catch (e) {
       console.error(e);
     }
@@ -101,16 +95,14 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   const handleAddRobux = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("/api/products", {
+      await safeFetchJson<any>("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...robuxForm, adminUsername: currentUser?.username })
       });
-      if (response.ok) {
-        setShowAddRobuxModal(false);
-        setRobuxForm({ amount: "", bonusAmount: "", price: "", originalPrice: "", isPopular: false, active: true });
-        fetchAllAdminData();
-      }
+      setShowAddRobuxModal(false);
+      setRobuxForm({ amount: "", bonusAmount: "", price: "", originalPrice: "", isPopular: false, active: true });
+      fetchAllAdminData();
     } catch (e) {
       console.error(e);
     }
@@ -120,14 +112,12 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   const handleDeleteRobux = async (id: string) => {
     if (!confirm("Hapus produk Robux ini?")) return;
     try {
-      const response = await fetch(`/api/products/${id}`, {
+      await safeFetchJson<any>(`/api/products/${id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adminUsername: currentUser?.username })
       });
-      if (response.ok) {
-        fetchAllAdminData();
-      }
+      fetchAllAdminData();
     } catch (e) {
       console.error(e);
     }
@@ -137,16 +127,14 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   const handleAddGamePass = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("/api/items", {
+      await safeFetchJson<any>("/api/items", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...gamePassForm, adminUsername: currentUser?.username })
       });
-      if (response.ok) {
-        setShowAddGamePassModal(false);
-        setGamePassForm({ name: "", gameName: "", price: "", originalPrice: "", category: "Blox Fruits", imageUrl: "", active: true });
-        fetchAllAdminData();
-      }
+      setShowAddGamePassModal(false);
+      setGamePassForm({ name: "", gameName: "", price: "", originalPrice: "", category: "Blox Fruits", imageUrl: "", active: true });
+      fetchAllAdminData();
     } catch (e) {
       console.error(e);
     }
@@ -156,14 +144,12 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   const handleDeleteGamePass = async (id: string) => {
     if (!confirm("Hapus Game Pass ini dari toko?")) return;
     try {
-      const response = await fetch(`/api/items/${id}`, {
+      await safeFetchJson<any>(`/api/items/${id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adminUsername: currentUser?.username })
       });
-      if (response.ok) {
-        fetchAllAdminData();
-      }
+      fetchAllAdminData();
     } catch (e) {
       console.error(e);
     }
@@ -173,16 +159,14 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   const handleAddBanner = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("/api/banners", {
+      await safeFetchJson<any>("/api/banners", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...bannerForm, adminUsername: currentUser?.username })
       });
-      if (response.ok) {
-        setShowAddBannerModal(false);
-        setBannerForm({ imageUrl: "", title: "", subtitle: "", link: "", active: true });
-        fetchAllAdminData();
-      }
+      setShowAddBannerModal(false);
+      setBannerForm({ imageUrl: "", title: "", subtitle: "", link: "", active: true });
+      fetchAllAdminData();
     } catch (e) {
       console.error(e);
     }
@@ -192,14 +176,12 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   const handleDeleteBanner = async (id: string) => {
     if (!confirm("Hapus banner promo ini?")) return;
     try {
-      const response = await fetch(`/api/banners/${id}`, {
+      await safeFetchJson<any>(`/api/banners/${id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adminUsername: currentUser?.username })
       });
-      if (response.ok) {
-        fetchAllAdminData();
-      }
+      fetchAllAdminData();
     } catch (e) {
       console.error(e);
     }
@@ -208,14 +190,12 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   // Approve review testimonial
   const handleApproveReview = async (id: string) => {
     try {
-      const response = await fetch(`/api/reviews/${id}/approve`, {
+      await safeFetchJson<any>(`/api/reviews/${id}/approve`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adminUsername: currentUser?.username })
       });
-      if (response.ok) {
-        fetchAllAdminData();
-      }
+      fetchAllAdminData();
     } catch (e) {
       console.error(e);
     }
@@ -224,14 +204,12 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   // Delete testimonial
   const handleDeleteReview = async (id: string) => {
     try {
-      const response = await fetch(`/api/reviews/${id}`, {
+      await safeFetchJson<any>(`/api/reviews/${id}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adminUsername: currentUser?.username })
       });
-      if (response.ok) {
-        fetchAllAdminData();
-      }
+      fetchAllAdminData();
     } catch (e) {
       console.error(e);
     }
@@ -241,15 +219,13 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("/api/settings", {
+      await safeFetchJson<any>("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ settings: settingsForm, adminUsername: currentUser?.username })
       });
-      if (response.ok) {
-        alert("Konfigurasi website berhasil disimpan!");
-        fetchAllAdminData();
-      }
+      alert("Konfigurasi website berhasil disimpan!");
+      fetchAllAdminData();
     } catch (e) {
       console.error(e);
     }
@@ -309,8 +285,8 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
         <div className="lg:col-span-1 space-y-2.5">
           <button
             onClick={() => setActiveSection("stats")}
-            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 ${
-              activeSection === "stats" ? "bg-emerald-500 text-black shadow" : "bg-gray-900 text-gray-400 hover:text-white"
+            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 border ${
+              activeSection === "stats" ? "bg-emerald-500 text-black shadow-lg border-emerald-500" : "bg-black/35 text-gray-400 border-emerald-500/5 hover:text-white"
             }`}
           >
             <BarChart3 size={16} />
@@ -318,8 +294,8 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
           </button>
           <button
             onClick={() => setActiveSection("orders")}
-            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between ${
-              activeSection === "orders" ? "bg-emerald-500 text-black shadow" : "bg-gray-900 text-gray-400 hover:text-white"
+            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center justify-between border ${
+              activeSection === "orders" ? "bg-emerald-500 text-black shadow-lg border-emerald-500" : "bg-black/35 text-gray-400 border-emerald-500/5 hover:text-white"
             }`}
           >
             <div className="flex items-center gap-3">
@@ -334,8 +310,8 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
           </button>
           <button
             onClick={() => setActiveSection("robux")}
-            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 ${
-              activeSection === "robux" ? "bg-emerald-500 text-black shadow" : "bg-gray-900 text-gray-400 hover:text-white"
+            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 border ${
+              activeSection === "robux" ? "bg-emerald-500 text-black shadow-lg border-emerald-500" : "bg-black/35 text-gray-400 border-emerald-500/5 hover:text-white"
             }`}
           >
             <Package size={16} />
@@ -343,8 +319,8 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
           </button>
           <button
             onClick={() => setActiveSection("items")}
-            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 ${
-              activeSection === "items" ? "bg-emerald-500 text-black shadow" : "bg-gray-900 text-gray-400 hover:text-white"
+            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 border ${
+              activeSection === "items" ? "bg-emerald-500 text-black shadow-lg border-emerald-500" : "bg-black/35 text-gray-400 border-emerald-500/5 hover:text-white"
             }`}
           >
             <Package size={16} />
@@ -352,8 +328,8 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
           </button>
           <button
             onClick={() => setActiveSection("banners")}
-            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 ${
-              activeSection === "banners" ? "bg-emerald-500 text-black shadow" : "bg-gray-900 text-gray-400 hover:text-white"
+            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 border ${
+              activeSection === "banners" ? "bg-emerald-500 text-black shadow-lg border-emerald-500" : "bg-black/35 text-gray-400 border-emerald-500/5 hover:text-white"
             }`}
           >
             <Sparkles size={16} />
@@ -361,8 +337,8 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
           </button>
           <button
             onClick={() => setActiveSection("reviews")}
-            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 ${
-              activeSection === "reviews" ? "bg-emerald-500 text-black shadow" : "bg-gray-900 text-gray-400 hover:text-white"
+            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 border ${
+              activeSection === "reviews" ? "bg-emerald-500 text-black shadow-lg border-emerald-500" : "bg-black/35 text-gray-400 border-emerald-500/5 hover:text-white"
             }`}
           >
             <MessageSquare size={16} />
@@ -370,8 +346,8 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
           </button>
           <button
             onClick={() => setActiveSection("users")}
-            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 ${
-              activeSection === "users" ? "bg-emerald-500 text-black shadow" : "bg-gray-900 text-gray-400 hover:text-white"
+            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 border ${
+              activeSection === "users" ? "bg-emerald-500 text-black shadow-lg border-emerald-500" : "bg-black/35 text-gray-400 border-emerald-500/5 hover:text-white"
             }`}
           >
             <Users size={16} />
@@ -379,8 +355,8 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
           </button>
           <button
             onClick={() => setActiveSection("settings")}
-            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 ${
-              activeSection === "settings" ? "bg-emerald-500 text-black shadow" : "bg-gray-900 text-gray-400 hover:text-white"
+            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 border ${
+              activeSection === "settings" ? "bg-emerald-500 text-black shadow-lg border-emerald-500" : "bg-black/35 text-gray-400 border-emerald-500/5 hover:text-white"
             }`}
           >
             <Settings size={16} />
@@ -388,8 +364,8 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
           </button>
           <button
             onClick={() => setActiveSection("logs")}
-            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 ${
-              activeSection === "logs" ? "bg-emerald-500 text-black shadow" : "bg-gray-900 text-gray-400 hover:text-white"
+            className={`w-full p-3 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 border ${
+              activeSection === "logs" ? "bg-emerald-500 text-black shadow-lg border-emerald-500" : "bg-black/35 text-gray-400 border-emerald-500/5 hover:text-white"
             }`}
           >
             <ScrollText size={16} />
@@ -398,7 +374,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
         </div>
 
         {/* Content Section Area (3 cols) */}
-        <div className="lg:col-span-3 bg-gray-900 border border-gray-800 rounded-2xl p-6 min-h-[500px]">
+        <div className="lg:col-span-3 premium-glass border border-emerald-500/15 rounded-2xl p-6 min-h-[500px]">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-24">
               <Loader2 className="text-emerald-500 animate-spin mb-4" size={32} />

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Mail, Lock, User, Chrome, CheckCircle2, ShieldCheck, HelpCircle } from "lucide-react";
 import { User as UserType } from "../types";
+import { safeFetchJson } from "../utils/api";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -32,16 +33,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const data = await safeFetchJson<any>("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ usernameOrEmail: email || username, password })
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Gagal masuk");
-      }
 
       setSuccess("Login berhasil! Selamat datang di R8 Premium.");
       setTimeout(() => {
@@ -70,16 +66,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     }
 
     try {
-      const response = await fetch("/api/auth/register", {
+      const data = await safeFetchJson<any>("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, username, password, robloxUsername })
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Pendaftaran gagal");
-      }
 
       setSuccess(data.message || "OTP terkirim!");
       if (data.otpDebug) {
@@ -101,16 +92,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/verify-otp", {
+      const data = await safeFetchJson<any>("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, username, password, robloxUsername, otp: otpCode })
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Verifikasi OTP gagal");
-      }
 
       setSuccess("Verifikasi Berhasil! Akun Anda telah aktif.");
       setTimeout(() => {
@@ -136,7 +122,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
       const demoEmail = `r8user_${randId}@gmail.com`;
       const demoName = `RbxMaster${randId}`;
 
-      const response = await fetch("/api/auth/google-login", {
+      const data = await safeFetchJson<any>("/api/auth/google-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -145,11 +131,6 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
           photoUrl: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${demoName}`
         })
       });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Google login gagal");
-      }
 
       setSuccess("Login dengan Google berhasil!");
       setTimeout(() => {
@@ -191,10 +172,10 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
         transition={{ duration: 0.2 }}
-        className="w-full max-w-md overflow-hidden bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl shadow-emerald-500/10"
+        className="w-full max-w-md overflow-hidden premium-glass border border-emerald-500/15 rounded-2xl shadow-2xl shadow-emerald-500/10"
       >
         {/* Header */}
-        <div className="relative p-6 border-b border-gray-800">
+        <div className="relative p-6 border-b border-emerald-500/10">
           <button 
             id="auth-close-btn"
             onClick={onClose}

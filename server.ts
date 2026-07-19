@@ -872,4 +872,11 @@ async function startServer() {
   });
 }
 
-startServer();
+// Only start local server if not on Vercel
+if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
+export { app };
+
