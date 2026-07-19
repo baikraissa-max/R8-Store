@@ -1,0 +1,6 @@
+{
+  "name": "R8 - Roblox Top Up Premium",
+  "description": "Platform top up Roblox Robux premium dan Game Pass aman, cepat, dan terpercaya.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
